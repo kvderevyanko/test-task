@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\helpers\FileHelper;
 
 /**
  * This is the model class for table "product".
@@ -52,14 +53,28 @@ class Product extends \yii\db\ActiveRecord
         ];
     }
 
-    //Возвращает превьюшку для продукта
+    /**
+     * Возвращает превьюшку для продукта
+     * @return mixed
+     */
     public function thumb(){
-        $image = ProductImage::find()->select(['file'])->where(['productId' => $this->id, 'default' => true])
-            ->one();
-        if($image) {
-            return ProductImage::imageThumb($this->id, $image->file);
-        }
+        $productId = $this->id;
+        $key = ['ProductThumb', $productId];
+        $imageThumb = Yii::$app->cache->getOrSet($key, function () use ($productId) {
+            $image = ProductImage::find()->select(['file'])->where(['productId' => $productId, 'default' => true])
+                ->one();
+            if($image) {
+                return ProductImage::imageThumb($productId, $image->file);
+            }
+            return ProductImage::imageThumb($productId);
+        }, 10);
+        return $imageThumb;
+    }
 
-        return ProductImage::imageThumb($this->id);
+    public function afterDelete()
+    {
+        ProductCategory::deleteAll(['productId' => $this->id]);
+        FileHelper::removeDirectory(\Yii::getAlias("@webroot")."/uploads/".$this->id."/");
+        parent::afterDelete();
     }
 }

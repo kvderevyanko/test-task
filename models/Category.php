@@ -46,11 +46,25 @@ class Category extends \yii\db\ActiveRecord
     }
 
     /**
-     * Возвращает список категорий
+     * Возвращаем список категорий для выпадающего списка
+     * @return array
+     */
+    public static function categoryList(){
+        return ArrayHelper::map(self::allCategories(), 'id', 'name');
+    }
+
+    /**
+     * Возвращает полный список всех категорий
      * @return array
      */
     public static function allCategories(){
         $categories = self::find()->orderBy(['name' => SORT_ASC])->all();
         return ArrayHelper::index($categories, 'id');
+    }
+
+    public function afterDelete()
+    {
+        ProductCategory::deleteAll(['categoryId' => $this->id]);
+        parent::afterDelete();
     }
 }

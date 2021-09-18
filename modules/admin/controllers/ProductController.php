@@ -186,7 +186,7 @@ class ProductController extends Controller
             $filePath = $directory . $fileName;
             if ($imageFile->saveAs($filePath)) {
                 $thumb = $directory.'thumb_'.$fileName;
-                Image::crop($filePath, 200, 200, [50, 50])
+                Image::crop($filePath, 200, 200, [100, 100])
                     ->save($thumb, ['quality' => 70]);
 
                 Image::frame($filePath, 0, '666', 0)

@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\Product;
+use app\models\ProductCategory;
 use app\models\ProductImage;
 use Yii;
 use yii\data\Pagination;
@@ -59,15 +60,34 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays homepage.
-     *
+     * @param string $productSort
+     * @param string $productCategory
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($productSort = "", $productCategory = "")
     {
         $query = Product::find()->andWhere([
             Product::tableName().'.active' => true,
-        ]);
+        ])->orderBy([Product::tableName().'.id' => SORT_DESC]);
+
+        if($productSort) {
+            switch ($productSort) {
+                case 'sort_price_asc':
+                    $query->orderBy([Product::tableName().'.price' => SORT_ASC]);
+                    break;
+                case 'sort_price_decs':
+                    $query->orderBy([Product::tableName().'.price' => SORT_DESC]);
+                    break;
+            }
+        }
+
+        if($productCategory) {
+            $query->leftJoin(
+                ProductCategory::tableName(),
+                ProductCategory::tableName().'.productId = '.Product::tableName().'.id' )
+            ->andWhere([ProductCategory::tableName().'.categoryId' => $productCategory]);
+        }
+
         $countQuery = clone $query;
         $pages = new Pagination(['totalCount' => $countQuery->count()]);
         $query->offset($pages->offset)

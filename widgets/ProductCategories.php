@@ -32,11 +32,8 @@ class ProductCategories extends Widget
                 ->leftJoin(ProductCategory::tableName(), Category::tableName().'.id = '.ProductCategory::tableName().'.categoryId')
                 ->all();
             return ArrayHelper::toArray($categories);
-        }, 5);
+        }, 10);
 
-        if (count($categories) < 1) {
-            return '';
-        }
         return $this->render('product-categories', ['categories' => $categories]);
     }
 }
